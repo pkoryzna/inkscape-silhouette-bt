@@ -29,8 +29,6 @@ import time
 
 usb_reset_needed = False  # https://github.com/fablabnbg/inkscape-silhouette/issues/10
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/pyusb-1.0.2')      # have a pyusb fallback
-
 sys_platform = sys.platform.lower()
 if sys_platform.startswith('win'):
   import usb.core
