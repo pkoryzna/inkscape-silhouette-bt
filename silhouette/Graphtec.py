@@ -332,19 +332,19 @@ class DummyPlotter(SilhouetteCameoConnection):
     QUERY_FIRMWARE_VERSION+CMD_ETX: b'None '+CMD_ETX
   }
 
+  def __init__(self):
+    self.mock_response = None
+    self.hardware = { 'name': 'Mock Silhouette Plotter' }
+
   def write(self, data, is_query=False, timeout=10000):
     if data in DummyPlotter.mock_responses:
       self.mock_response = DummyPlotter.mock_responses[data]
     return None
 
-  def __init__(self):
-    self.mock_response = None
-    self.hardware = { 'name': 'Mock Silhouette Plotter' }
-
   def read(self, *args, **kwargs):
     data = self.mock_response
     self.mock_response = None
-    if data is None: return None
+    return data
 
 class SilhouetteCameo:
   def __init__(self, log=sys.stderr, cmdfile=None, inc_queries=False,
