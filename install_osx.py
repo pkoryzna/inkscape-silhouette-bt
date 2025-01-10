@@ -40,7 +40,8 @@ def install_inkscape_silhouette():
         install_extension()
         check_libusb()
         logger.info("inkscape_silhouette extension install ended")
-        logger.info("Don't forget to add 'python-interpreter=\"%s\"' to your extension preference file.", subprocess.check_output(["which", "python3"]).decode("utf-8").replace("\n", ""))
+
+        logger.info("Don't forget to add 'python-interpreter=\"%s\"' to your extension preference file.", sys.executable)
     except Exception as ex:
         logger.warning("inkscape_silhouette install was unsuccessful. Please check previous messages for the cause. Details: %s", ex)
 
@@ -50,7 +51,7 @@ def install_prerequisites():
     for prerequisite in prerequisites:
         logger.debug("installing %s", prerequisite)
         try:
-            return_code = subprocess.call("pip3 install {}".format(prerequisite), shell=True)
+            return_code = subprocess.call("{} -m pip install {}".format(sys.executable, prerequisite), shell=True)
             if return_code > 0:
                 raise OSError("command returned code {}, try running again using sudo".format(return_code))
         except OSError:
