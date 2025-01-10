@@ -28,6 +28,8 @@ import re
 import sys
 import time
 
+import usb
+
 from silhouette.connection import SilhouetteCameoConnection
 
 usb_reset_needed = False  # https://github.com/fablabnbg/inkscape-silhouette/issues/10
@@ -339,7 +341,7 @@ class DummyPlotter(SilhouetteCameoConnection):
     self.mock_response = None
     self.hardware = { 'name': 'Mock Silhouette Plotter' }
 
-  def read(self, **kwargs):
+  def read(self, *args, **kwargs):
     data = self.mock_response
     self.mock_response = None
     if data is None: return None
@@ -443,7 +445,7 @@ class SilhouetteCameo:
 
 
   def read(self, size=64, timeout=5000):
-    return self._usb_read(size, timeout)
+    return self.connection.read(size, timeout)
 
   def try_read(self, size=64, timeout=1000):
     ret=None
@@ -474,6 +476,7 @@ class SilhouetteCameo:
     resp = b"None\x03"
     try:
       resp = self.read(timeout=5000)
+    # TODO remove usb import here
     except usb.core.USBError as e:
       print("usb.core.USBError:", e, file=self.log)
       pass
