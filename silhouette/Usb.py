@@ -4,6 +4,7 @@ import time
 import usb.core
 
 from silhouette.connection import SilhouetteCameoConnection
+from silhouette.DeviceConstants import *
 
 
 sys_platform = sys.platform.lower()
@@ -277,3 +278,10 @@ class SilhouetteCameoUSBConnection(SilhouetteCameoConnection):
 
     if o != len(data):
       raise ValueError('write all %d bytes failed: o=%d' % (len(data), o))
+
+
+def to_bytes(b_or_s):
+  """Ensure a value is bytes"""
+  if isinstance(b_or_s, str): return b_or_s.encode()
+  if isinstance(b_or_s, bytes): return b_or_s
+  raise TypeError("Value must be a string or bytes.")
