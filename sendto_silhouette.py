@@ -9,6 +9,7 @@ __version__ = "1.29"     # Keep in sync with sendto_silhouette.inx ca line 179
 __author__ = "Juergen Weigert <juergen@fabmail.org> and contributors"
 
 import sys, os, time, math, operator
+import traceback
 
 # we sys.path.append() the directory where this script lives.
 sys.path.append(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -293,6 +294,8 @@ class SendtoSilhouette(EffectExtension):
             log   - record in logfile if there is one
             tty   - write to tty and flush if there is one
         """
+        if isinstance(message, Exception):
+            message = traceback.format_exception(message)
         if level == 'tty':
             if self.tty:
                 print(message, file=self.tty)
