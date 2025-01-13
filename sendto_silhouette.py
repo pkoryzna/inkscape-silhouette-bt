@@ -295,7 +295,7 @@ class SendtoSilhouette(EffectExtension):
             tty   - write to tty and flush if there is one
         """
         if isinstance(message, Exception):
-            message = traceback.format_exception(message)
+            message = ''.join(traceback.format_exception(message))
         if level == 'tty':
             if self.tty:
                 print(message, file=self.tty)
