@@ -839,6 +839,7 @@ class SendtoSilhouette(EffectExtension):
             self.device_buffer_perc = 0.0
             self.writeProgress(1, 1, dots)
         self.report("\nstatus=%s" % (state), 'log')
+        dev.close()
 
 
 if __name__ == "__main__":

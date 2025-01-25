@@ -363,7 +363,7 @@ class SilhouetteCameo:
     elif connection_type == "ble":
       print("starting ble connection", file=self.log)
       from silhouette.Bluetooth import SilhouetteBleSerialConnection
-      self.connection = SilhouetteBleSerialConnection()
+      self.connection = SilhouetteBleSerialConnection(log=log, progress_cb=progress_cb)
     else:
       raise KeyError(f"Unknown connection type '{connection_type}'")
 
@@ -384,8 +384,7 @@ class SilhouetteCameo:
     self.clip_fuzz = 0.05
 
   def __del__(self, *args):
-    if self.commands:
-      self.commands.close()
+    self.close()
 
   def product_id(self):
     return self.hardware['product_id'] if 'product_id' in self.hardware else None
@@ -1316,3 +1315,10 @@ class SilhouetteCameo:
       else:
         print(line,end='')
     return data1234
+
+  def close(self):
+    if self.commands:
+      self.commands.close()
+    if self.connection:
+      self.connection.close()
+      self.connection = None
