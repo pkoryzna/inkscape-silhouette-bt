@@ -6,3 +6,16 @@ class SilhouetteCameoConnection:
   def write(self, data, is_query=False, timeout=10000):
     """Send a command to the device."""
     raise NotImplementedError()
+
+  def close(self):
+    """Close the connection"""
+    pass
+
+  def __del__(self):
+    self.close()
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, exc_type, exc_val, exc_tb):
+    self.close()
