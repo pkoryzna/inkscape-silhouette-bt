@@ -323,7 +323,7 @@ class DummyPlotter(SilhouetteCameoConnection):
 
 class SilhouetteCameo:
   def __init__(self, log=sys.stderr, cmdfile=None, inc_queries=False,
-               dry_run=False, progress_cb=None, force_hardware=None):
+               dry_run=False, progress_cb=None, force_hardware=None, connection_type="usb"):
     """ This initializer simply finds the first known device.
         The default paper alignment is left hand side for devices with known width
         (currently Cameo and Portrait). Otherwise it is right hand side.
@@ -355,14 +355,27 @@ class SilhouetteCameo:
     self.progress_cb = progress_cb
     self.margins_printed = None
 
-    # TODO: make it possible to use BT too
-    if not self.dry_run:
+    if self.dry_run:
+      self.connection = DummyPlotter()
+    elif connection_type == "usb":
       from silhouette.Usb import SilhouetteCameoUSBConnection
       self.connection = SilhouetteCameoUSBConnection(force_hardware, log, progress_cb)
+    elif connection_type == "ble":
+      print("starting ble connection", file=self.log)
+      from silhouette.Bluetooth import SilhouetteBleSerialConnection
+      self.connection = SilhouetteBleSerialConnection()
     else:
-      self.connection = DummyPlotter()
+      raise KeyError(f"Unknown connection type '{connection_type}'")
 
-    self.hardware = self.connection.hardware
+    if not force_hardware:
+      if not self.connection.hardware:
+        raise ValueError(f"Could not autodetect hardware type using '{connection_type}' connection")
+      self.hardware = self.connection.hardware
+    else:
+      dev = [dev for dev in DEVICE if dev["name"] == force_hardware]
+      if not dev:
+        raise KeyError(f"Unknown hardware '{force_hardware}'")
+      self.hardware = dev[0]
 
     self.regmark = False                # not yet implemented. See robocut/Plotter.cpp:446
     if 'width_mm' in self.hardware:
