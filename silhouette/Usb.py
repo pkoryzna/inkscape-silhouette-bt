@@ -279,6 +279,10 @@ class SilhouetteCameoUSBConnection(SilhouetteCameoConnection):
     if o != len(data):
       raise ValueError('write all %d bytes failed: o=%d' % (len(data), o))
 
+  def close(self):
+    if self.dev:
+      self.dev.close()
+    self.dev = None
 
 def to_bytes(b_or_s):
   """Ensure a value is bytes"""
