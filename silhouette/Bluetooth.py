@@ -61,6 +61,8 @@ class SilhouetteBleSerialConnection(SilhouetteCameoConnection):
 
     def _attempt_connect(self, device_id, max_retries=10):
         """Run ble_serial on a random TCP port and connect"""
+        if not device_id:
+            raise IndexError("I don't know which plotter to connect to!")
         for attempt in range(0, max_retries):
             port = random.choice(PORT_RANGE)
             ble_serial_args = [
