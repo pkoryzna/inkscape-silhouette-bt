@@ -5,3 +5,4 @@ xmltodict  >= 0.13.0 # required for Silhouette Multiple Actions
 cssselect  >= 1.1.0  # required for inkscape >= 1.2
 tinycss2   >= 1.1.1  # required for inkscape >= 1.4
 matplotlib >= 3.7.2  # required displaying cut preview
+ble_serial
