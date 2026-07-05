@@ -284,6 +284,9 @@ class SendtoSilhouette(EffectExtension):
         # Can't set up the log here because arguments have not yet been parsed;
         # defer that to the top of the effect() method, which is where all
         # of the real activity happens.
+        pars.add_argument("--connection_type", 
+                dest= "connection_type", default="usb", 
+                help="Select whether your plotter is connected with a USB cable or over Bluetooth Low Energy.")
 
 
     def report(self, message, level):
@@ -737,7 +740,8 @@ class SendtoSilhouette(EffectExtension):
                                   cmdfile=self.cmdfile,
                                   inc_queries=self.options.inc_queries,
                                   dry_run=self.options.dry_run,
-                                  force_hardware=self.options.force_hardware)
+                                  force_hardware=self.options.force_hardware,
+                                  connection_type=self.options.connection_type)
         except Exception as e:
             self.report(e, 'error')
             return

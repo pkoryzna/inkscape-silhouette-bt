@@ -6,6 +6,10 @@
   <dependency type="executable" location="inx">sendto_silhouette.py</dependency>
   <param name="active-tab" type="notebook">
     <page name='silhouette' translatable="no" gui-text='Silhouette'>
+      <param name="connection_type" type="optiongroup" appearance="combo" gui-text="Connection type">
+      <option translatable="no" value="usb">USB</option>
+        <option translatable="no" value="ble">Bluetooth</option>
+      </param>
       <param name="x_off" type="float" min="-999.0" max="999.0" precision="2" translatable="no" gui-text="X-Offset [mm]">0.0</param>
       <param name="y_off" type="float" min="-999.0" max="999.0" precision="2" translatable="no" gui-text="Y-Offset [mm]">0.0</param>
       <param name="cuttingmat" type="optiongroup" appearance="combo" gui-text="Cutting Mat">
