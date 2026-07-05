@@ -28,10 +28,11 @@ import re
 import sys
 import time
 
+import usb
+
 from silhouette.DeviceConstants import *
 from silhouette.connection import SilhouetteCameoConnection
 
-usb_reset_needed = False  # https://github.com/fablabnbg/inkscape-silhouette/issues/10
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/pyusb-1.0.2')      # have a pyusb fallback
 
 def _bbox_extend(bb, x, y):
@@ -232,7 +233,7 @@ class SilhouetteCameo:
 
     # If there is no device, the only thing we might need to do is mock
     # a response:
-    if self.dev is None:
+    if self.connection is None:
       if data in SilhouetteCameo.mock_responses:
         self.mock_response = SilhouetteCameo.mock_responses[data]
       return None
@@ -241,75 +242,8 @@ class SilhouetteCameo:
     if self.dry_run and not is_query:
       return None
 
-    # robocut/Plotter.cpp:73 says: Send in 4096 byte chunks. Not sure where I got this from, I'm not sure it is actually necessary.
-    try:
-      resp = self.read(timeout=10) # poll the inbound buffer
-      if resp:
-        print("response before write('%s'): '%s'" % (data, resp), file=self.log)
-    except:
-      pass
-    endpoint = 0x01
-    chunksz = 4096
-    r = 0
-    o = 0
-    msg=''
-    retry = 0
-    while o < len(data):
-      if o:
-        if self.progress_cb:
-          self.progress_cb(o,len(data),msg)
-        elif self.log:
-          self.log.write(" %d%% %s\r" % (100.*o/len(data),msg))
-          self.log.flush()
-      chunk = data[o:o+chunksz]
-      try:
-        if self.need_interface:
-          try:
-            r = self.dev.write(endpoint, chunk, interface=0, timeout=timeout)
-          except AttributeError:
-            r = self.dev.bulkWrite(endpoint, chunk, interface=0, timeout=timeout)
-        else:
-          try:
-            r = self.dev.write(endpoint, chunk, timeout=timeout)
-          except AttributeError:
-            r = self.dev.bulkWrite(endpoint, chunk, timeout=timeout)
-      except TypeError as te:
-        # write() got an unexpected keyword argument 'interface'
-        raise TypeError("Write Exception: %s, %s dev=%s" % (type(te), te, type(self.dev)))
-      except AttributeError as ae:
-        # write() got an unexpected keyword argument 'interface'
-        raise TypeError("Write Exception: %s, %s dev=%s" % (type(ae), ae, type(self.dev)))
+    self.connection.write(data, is_query, timeout)
 
-      except Exception as e:
-        # raise USBError(_str_error[ret], ret, _libusb_errno[ret])
-        # usb.core.USBError: [Errno 110] Operation timed
-        #print("Write Exception: %s, %s errno=%s" % (type(e), e, e.errno), file=s.log)
-        import errno
-        try:
-          if e.errno == errno.ETIMEDOUT:
-            time.sleep(1)
-            msg += 't'
-            continue
-        except Exception as ee:
-          msg += "s.dev.write Error:  {}".format(ee)
-      else:
-        if len(msg):
-          msg = ''
-          self.log.write("\n")
-
-      # print("write([%d:%d], len=%d) = %d" % (o,o+chunksz, len(chunk), r), file=s.log)
-      if r == 0 and retry < 5:
-        time.sleep(1)
-        retry += 1
-        msg += 'r'
-      elif r <= 0:
-        raise ValueError('write %d bytes failed: r=%d' % (len(chunk), r))
-      else:
-        retry = 0
-      o += r
-
-    if o != len(data):
-      raise ValueError('write all %d bytes failed: o=%d' % (len(data), o))
 
   def safe_write(self, data):
     """
@@ -347,7 +281,7 @@ class SilhouetteCameo:
 
 
   def read(self, size=64, timeout=5000):
-    return self._usb_read(size, timeout)
+    return self.connection.read(size, timeout)
 
   def try_read(self, size=64, timeout=1000):
     ret=None

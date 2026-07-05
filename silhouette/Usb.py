@@ -6,6 +6,7 @@ import usb.core
 from silhouette.connection import SilhouetteCameoConnection
 from silhouette.DeviceConstants import *
 
+usb_reset_needed = False  # https://github.com/fablabnbg/inkscape-silhouette/issues/10
 
 sys_platform = sys.platform.lower()
 if sys_platform.startswith('win'):
