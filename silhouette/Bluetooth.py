@@ -1,24 +1,17 @@
+import asyncio
 import random
 import subprocess
 import sys
 import time
 import socket
 
+from silhouette import BluetoothScan
 from silhouette.DeviceConstants import *
 from silhouette.connection import SilhouetteCameoConnection
 
 MAX_RETRY_LIMIT = 5
 
 PORT_RANGE = range(2000, 20000)
-
-# UUID of service that emulates a serial port/UART over BLE
-SILHOUETTE_BLE_UART_SERVICE_UUID = "e2088282-4fde-42f9-bb22-6ec3c7ed8f91"
-
-# UUID of the characteristic of BLE UART service where our commands are written to
-SILHOUETTE_BLE_UART_WRITE_UUID = "6d92661d-f429-4d67-929b-28e7a9780912"
-
-# UUID of the characteristic of BLE UART service to read responses from
-SILHOUETTE_BLE_UART_READ_UUID = "8dcf199a-30e7-4bd4-beb6-beb57dca866c"
 
 
 class SilhouetteBleSerialConnection(SilhouetteCameoConnection):
@@ -50,6 +43,7 @@ class SilhouetteBleSerialConnection(SilhouetteCameoConnection):
     def __init__(
         self, device_id=None, force_hardware=None, progress_cb=None, log=sys.stderr
     ):
+        self.log = log
         self.sock = None
         self.port = None
         self.ble_serial_proc = None
@@ -57,20 +51,23 @@ class SilhouetteBleSerialConnection(SilhouetteCameoConnection):
         # TODO autodetect based on GATT attributes
         self.hardware = force_hardware
         self.progress_cb = progress_cb
-        self.log = log
+        
 
-    def _attempt_connect(self, device_id, max_retries=10):
+    def _attempt_connect(self, device_id, max_retries=1):
         """Run ble_serial on a random TCP port and connect"""
+        if not device_id and BluetoothScan.ask_for_scan():
+            devices = asyncio.run(BluetoothScan.scan_devices())
+            device_id = BluetoothScan.select_device(devices)
         if not device_id:
-            raise IndexError("I don't know which plotter to connect to!")
+            raise IndexError("No device was selected")
         for attempt in range(0, max_retries):
             port = random.choice(PORT_RANGE)
             ble_serial_args = [
                 sys.executable,
                 "-m",
                 "ble_serial",
-                "-s",
-                SILHOUETTE_BLE_UART_SERVICE_UUID,
+                # "-s",
+                # SILHOUETTE_BLE_UART_SERVICE_UUID,
                 "-r",
                 SILHOUETTE_BLE_UART_READ_UUID,
                 "-w",
@@ -78,12 +75,11 @@ class SilhouetteBleSerialConnection(SilhouetteCameoConnection):
                 "--expose-tcp-port",
                 str(port),
                 "--write-with-response",
+                "-d",
+                device_id,
+                "-t",
+                "1"
             ]
-
-            if device_id:
-                ble_serial_args.append("-d")
-                ble_serial_args.append(device_id)
-
             print(f"opening ble_serial: {ble_serial_args}", file=self.log, flush=True)
 
             self.ble_serial_proc = subprocess.Popen(ble_serial_args)
@@ -109,12 +105,14 @@ class SilhouetteBleSerialConnection(SilhouetteCameoConnection):
             raise Exception("Failed to connect with ble_serial after 10 attempts")
 
     def close(self):
-        if self.sock:
-            self.sock.close()
-            self.sock = None
-        if self.ble_serial_proc:
-            self.ble_serial_proc.kill()
-            self.ble_serial_proc = None
+        try:
+            if self.sock:
+                self.sock.close()
+                self.sock = None
+        finally:
+            if self.ble_serial_proc:
+                self.ble_serial_proc.kill()
+                self.ble_serial_proc = None
 
 
     def read(self, size=64, timeout=5000):

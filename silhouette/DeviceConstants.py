@@ -162,3 +162,13 @@ DEVICE = [
  { 'vendor_id': VENDOR_ID_GRAPHTEC, 'product_id': PRODUCT_ID_SILHOUETTE_SD_1, 'name': 'Silhouette_SD_1' },
  { 'vendor_id': VENDOR_ID_GRAPHTEC, 'product_id': PRODUCT_ID_SILHOUETTE_SD_2, 'name': 'Silhouette_SD_2' },
 ]
+
+
+# UUID of service that emulates a serial port/UART over BLE
+SILHOUETTE_BLE_UART_SERVICE_UUID = "e2088282-4fde-42f9-bb22-6ec3c7ed8f91"
+
+# UUID of the characteristic of BLE UART service where our commands are written to
+SILHOUETTE_BLE_UART_WRITE_UUID = "6d92661d-f429-4d67-929b-28e7a9780912"
+
+# UUID of the characteristic of BLE UART service to read responses from
+SILHOUETTE_BLE_UART_READ_UUID = "8dcf199a-30e7-4bd4-beb6-beb57dca866c"
