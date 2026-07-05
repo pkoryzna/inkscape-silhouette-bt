@@ -55,9 +55,8 @@ class SilhouetteBleSerialConnection(SilhouetteCameoConnection):
 
     def _attempt_connect(self, device_id, max_retries=1):
         """Run ble_serial on a random TCP port and connect"""
-        if not device_id and BluetoothScan.ask_for_scan():
-            devices = asyncio.run(BluetoothScan.scan_devices())
-            device_id = BluetoothScan.select_device(devices)
+        if not device_id:
+            device_id = BluetoothScan.interactive_scan()
         if not device_id:
             raise IndexError("No device was selected")
         for attempt in range(0, max_retries):
