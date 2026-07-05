@@ -9,4 +9,5 @@ testcut_square_triangle_o.cmd
 
 # IDE files
 .idea
-.vscode.DS_Store
+.vscode
+.DS_Store
