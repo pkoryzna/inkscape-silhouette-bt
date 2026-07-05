@@ -28,6 +28,7 @@ import re
 import sys
 import time
 
+from silhouette.DeviceConstants import *
 from silhouette.connection import SilhouetteCameoConnection
 
 usb_reset_needed = False  # https://github.com/fablabnbg/inkscape-silhouette/issues/10
@@ -197,7 +198,7 @@ class SilhouetteCameo:
     elif connection_type == "ble":
       print("starting ble connection", file=self.log)
       from silhouette.Bluetooth import SilhouetteBleSerialConnection
-      self.connection = SilhouetteBleSerialConnection(log=log, progress_cb=progress_cb)
+      self.connection = SilhouetteBleSerialConnection(log=self.log, progress_cb=progress_cb)
     else:
       raise KeyError(f"Unknown connection type '{connection_type}'")
 
